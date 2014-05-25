@@ -264,6 +264,70 @@ And thats it with the basic Travis CI integration. When you create these files
 and push them to your repository, Travis CI will pick up the change and perform
 the steps we just described. And hopefully it will say "build passed".
 
+3. Adding advanced puppet features - templates and plugins
+----------------------------------------------------------
+
+In the previous step we integrated our puppet module repository hosted on GitHub
+with Travis CI to automate some basic checks for our module. In this small step
+we add some advanced features to our module. These features are [templates][]
+and plugins. Calling templates an "advanced" feature of puppet may seem far
+fetched but they involve touching raw ruby code with all the advantages and
+especially risks.
+
+Before we can test anything we have to extend our module so lets do that first.
+And because they are pretty common we will start with adding a template. The
+directory structure of the module has to be extended like this:
+
+    /testguide/
+      manifests/
+        init.pp
+      templates/
+        hello.erb
+
+And the contents of the template are as follows:
+
+    <% if @world -%>
+    Hello <%= @world %>
+    <% end -%>
+
+Nothing really creative but...well, this is a guide on testing and not on
+creating nice puppet modules. Now we only have to modify our puppet manifest
+`init.pp` to look like this:
+
+    class testguide ( $world ) {
+      file { '/tmp/hello.txt':
+        ensure  => file,
+        content => template('testguide/hello.erb')
+      }
+    }
+ 
+This does exactly the same as before but it uses a template to accomplish that.
+To syntax check our template, we would have to execute the following statement:
+
+    [mgruener@devel testguide]$ erb -P -x -T '-' templates/hello.erb | ruby -c
+
+The last step, at least in regard to templates, is to integrate this into our
+test setup. The only file we have to modify is the Rakefile where we extend the
+":validate" task:
+
+    require 'rubygems'
+    require 'puppet-lint/tasks/puppet-lint'
+    PuppetLint.configuration.send('disable_80chars')
+    PuppetLint.configuration.send('disable_class_inherits_from_params_class')
+    PuppetLint.configuration.ignore_paths = ["spec/**/*.pp", "pkg/**/*.pp","examples/**/*.pp"]
+
+    desc "Validate manifests, templates, and ruby files in lib."
+    task :validate do
+      Dir['manifests/**/*.pp'].each do |manifest|
+        sh "puppet parser validate --noop #{manifest}"
+      end
+      Dir['templates/**/*.erb'].each do |template|
+        sh "erb -P -x -T '-' #{template} | ruby -c"
+      end
+    end
+
+    task :default => [:lint, :validate]
+
   [PuppetForge]: https://forge.puppetlabs.com/ "Puppet Forge"
   [ModuleLayoutDocumentation]: http://docs.puppetlabs.com/puppet/3.6/reference/modules_fundamentals.html#module-layout "Puppetlabs module-layout documentation"
   [PuppetStyleGuide]: http://docs.puppetlabs.com/guides/style_guide.html "Puppet Style Guide"
@@ -285,3 +349,4 @@ the steps we just described. And hopefully it will say "build passed".
   [bundler]: https://rubygems.org/gems/bundler "bundler"
   [rake]: http://rake.rubyforge.org/ "rake"
   [PuppetLintChecks]: http://puppet-lint.com/checks/ "Puppet Lint Check Documentation"
+  [templates]: http://docs.puppetlabs.com/guides/templating.html "Using Puppet Templates"
