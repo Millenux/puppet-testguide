@@ -284,3 +284,4 @@ the steps we just described. And hopefully it will say "build passed".
   [Gems]: https://rubygems.org/ "Ruby Gems"
   [bundler]: https://rubygems.org/gems/bundler "bundler"
   [rake]: http://rake.rubyforge.org/ "rake"
+  [PuppetLintChecks]: http://puppet-lint.com/checks/ "Puppet Lint Check Documentation"
