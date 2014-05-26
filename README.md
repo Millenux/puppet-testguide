@@ -608,9 +608,9 @@ there tests for three different other file resources representing directories?
 Our testguide class only manages the "/tmp/some/useless/directory" directory.
 Or does it? Well, sequence_string returns an array, in this case
 
-    ['/tmp/some/,'/tmp/some/useless/','/tmp/some/useless/directory']
+    $directories = ['/tmp/some/,'/tmp/some/useless/','/tmp/some/useless/directory']
 
-which we pass to `file { $directory:`. This way we create three different
+which we pass to `file { $directories:`. This way we create three different
 file resources, one for each level of directories.
 
 Everything else said about the sequence_string test is also true for this test
