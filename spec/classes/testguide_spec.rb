@@ -1,11 +1,11 @@
 require 'spec_helper'
 
 describe 'testguide', :type => :class do
-  let(:params) { { :world => 'kitty' } }
+  let(:params) { { :world => 'Kitty!' } }
 
   it do
     should contain_file('/tmp/some/useless/directory/hello.txt') \
-      .with_content('Hello kitty!')
+      .with_content("Hello Kitty!\n")
   end
 
   it do

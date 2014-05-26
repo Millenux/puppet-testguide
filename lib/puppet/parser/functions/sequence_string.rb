@@ -12,7 +12,7 @@ Would result in:
     EOS
   ) do |arguments|
     str = arguments[0]
-    separator = arguments[1]
+    separator = arguments[1] ? arguments[1] : '/'
     sequence = [arguments[2]]
     str.each_line(separator) do |part|
       sequence << "#{sequence[-1]}#{part}"

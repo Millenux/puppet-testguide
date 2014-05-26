@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe 'sequence_string' do
-  describe 'when called only with a string as only parameter' do
+  describe 'when called only with a single string parameter' do
     it do
       should run.with_params('/this/is/a/test').and_return(['/','/this/','/this/is/','/this/is/a/','/this/is/a/test']) 
     end

@@ -363,7 +363,7 @@ Pretty complex structure just for one file. Anyway, the contents of our
         EOS
       ) do |arguments|
         str = arguments[0]
-        separator = arguments[1]
+        separator = arguments[1] ? arguments[1] : '/'
         sequence = [arguments[2]]
         str.each_line(separator) do |part|
           sequence << "#{sequence[-1]}#{part}"
@@ -490,6 +490,18 @@ Then we have to add the Rake tasks provided by the spec-helper to our
 The ":spec" task provided by the puppetlabs_spec_helper/rake_tasks will create
 the so called "fixtures", run the spec tests and clean up afterwards.
 
+`puppetlabs_spec_helper` also needs a new file in our module: `.fixtures.yml`.
+Similiar to the `Gemfile` used by bundler, the `.fixtures.yml` file describes
+the test environment used by rspec-puppet. It contains a list of components
+(repositories, files and so on along with their respective versions) that
+should be present in our test environment.
+
+In our case this is simple, we only need the module we like to test:
+
+    fixtures:
+      symlinks:
+        testguide: "#{source_dir}"
+
 Next we will prepare the directory structure for our spec-tests and add a
 `spec_helper.rb`. This file includes things common to all our spec-tests and we
 will require it in each one.
@@ -504,6 +516,7 @@ will require it in each one.
           parser/
             functions/
               sequence_string.rb
+      .fixtures.yml
       spec/
         classes/
         functions/
@@ -536,7 +549,7 @@ Lets start with the specification for our sequence_string function:
     require 'spec_helper'
 
     describe 'sequence_string' do
-      describe 'when called only with a string as only parameter' do
+      describe 'when called only with a single string parameter' do
         it do
           should run.with_params('/this/is/a/test').and_return(['/','/this/','/this/is/','/this/is/a/','/this/is/a/test'])
         end
@@ -570,11 +583,11 @@ Lets have a look at our test file for the testguide class:
     require 'spec_helper'
 
     describe 'testguide', :type => :class do
-      let(:params) { { :world => 'kitty' } }
+      let(:params) { { :world => 'Kitty!' } }
 
       it do
         should contain_file('/tmp/some/useless/directory/hello.txt') \
-          .with_content('Hello kitty!')
+          .with_content("Hello Kitty!\n")
       end
 
       it do
