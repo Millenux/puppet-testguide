@@ -422,8 +422,7 @@ test it. As it was the case with templates we only have to extend the
 We now have a Puppet module with common resources, a template and a custom
 function. And everything is automatically tested the moment we push it to our
 repository. Well, sort of. We test for correct syntax and style but we do not
-test if our code works as designed. This will be part of our next and final
-step.
+test if our code works as designed. This will be part of the next step.
 
   [PuppetForge]: https://forge.puppetlabs.com/ "Puppet Forge"
   [ModuleLayoutDocumentation]: http://docs.puppetlabs.com/puppet/3.6/reference/modules_fundamentals.html#module-layout "Puppetlabs module-layout documentation"
