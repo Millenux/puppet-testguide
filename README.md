@@ -424,6 +424,197 @@ function. And everything is automatically tested the moment we push it to our
 repository. Well, sort of. We test for correct syntax and style but we do not
 test if our code works as designed. This will be part of the next step.
 
+4. Everything works as specified - rspec puppet
+-----------------------------------------------
+
+When a puppet module becomes more complex just checking that it is
+syntactically correct and well formatted is not enought. It should also conform
+to some sort of specification. For example our testguide class should always
+create a file hello.txt containing the text "Hello <ourstring>!". With such
+a specification (and test setup that automatically tests our code against it)
+we can limit the cases where someone accidentally breaks our code. He has to
+break it on purpose. As a side note, GitHub triggers Travis CI builds for pull
+requests so you instantly see when someone wants to contribute code that breaks
+your precious Puppet module!
+
+To test ruby code there exists a nice tool called [rspec][]. And because rspec
+provides a really good way to test your code, someone created [rspec-puppet][]
+to spec-test your puppet code (which is based on ruby after all) the same way.
+
+To create spec-tests for our module we first have to prepare it. There is a
+manual way to to this described on the rspec-puppet website. But I am lazy and
+prefer best-practice-gone-code so we will use the [puppetlabs-spec-helper][].
+For some more details on this spec-helper have a look at the
+[NextGenerationofPuppetModuleTesting][] blogpost at Puppetlabs.
+
+First we have to add the puppetlabs_spec_helper Gem to our `Gemfile`:
+
+    source 'https://rubygems.org'
+
+    if ENV.key?('PUPPET_VERSION')
+      puppetversion = "#{ENV['PUPPET_VERSION']}"
+    else
+      puppetversion = ['~> 2.7']
+    end
+
+    gem 'puppet', puppetversion, :require => false
+    gem 'puppet-lint'
+    gem 'rake'
+    gem 'puppetlabs_spec_helper', '>= 0.1.0'
+
+Then we have to add the Rake tasks provided by the spec-helper to our
+`Rakefile` and tell it to execute them as part of the ":default" task:
+
+    require 'rubygems'
+    require 'puppet-lint/tasks/puppet-lint'
+    require 'puppetlabs_spec_helper/rake_tasks'
+    PuppetLint.configuration.send('disable_80chars')
+    PuppetLint.configuration.send('disable_class_inherits_from_params_class')
+    PuppetLint.configuration.ignore_paths = ["spec/**/*.pp", "pkg/**/*.pp","examples/**/*.pp"]
+
+    desc "Validate manifests, templates, and ruby files in lib."
+    task :validate do
+      Dir['manifests/**/*.pp'].each do |manifest|
+        sh "puppet parser validate --noop #{manifest}"
+      end
+      Dir['templates/**/*.erb'].each do |template|
+        sh "erb -P -x -T '-' #{template} | ruby -c"
+      end
+      Dir['lib/**/*.rb'].each do |lib_file|
+        sh "ruby -c #{lib_file}"
+      end
+    end
+
+    task :default => [:lint, :validate, :spec]
+
+The ":spec" task provided by the puppetlabs_spec_helper/rake_tasks will create
+the so called "fixtures", run the spec tests and clean up afterwards.
+
+Next we will prepare the directory structure for our spec-tests and add a
+`spec_helper.rb`. This file includes things common to all our spec-tests and we
+will require it in each one.
+
+    /testguide/
+      manifests/
+        init.pp
+      templates/
+        hello.erb
+      lib/
+        puppet/
+          parser/
+            functions/
+              sequence_string.rb
+      spec/
+        classes/
+        functions/
+        spec_helper.rb
+
+In our case the `spec_helper.rb` is really simple:
+
+    require 'rubygems'
+    require 'puppetlabs_spec_helper/module_spec_helper'
+
+All the actual work is done by the puppetlabs_spec_helper. With all the
+preparations finished we can start to create the actual spec-tests.
+
+You may have noticed that we created "classes" and a "functions" directory. As
+you might have guessed the spec files to test classes belong in the classes
+directory and the spec tests to test functions belong to the functions
+directory. There could also be directories for "defines" and "hosts" but as
+we do not have any of these in our module we do not need them.
+
+Aside from where your test files should be located you also have to name them
+correctly. Testfiles always have the format `<name>_spec.rb` where <name> is a
+class name, a function name, and so on. In our case we need two test files
+`sequence_string_spec.rb` (to test our custom function) and `testguide_spec.rb`
+(to test our testguide class). As a side note, if you want to test something
+like "mymodule::myclass" you would call your test file `myclass_spec.rb`.
+
+Lets start with the specification for our sequence_string function:
+
+    sequence_string_spec.rb:
+    require 'spec_helper'
+
+    describe 'sequence_string' do
+      describe 'when called only with a string as only parameter' do
+        it do
+          should run.with_params('/this/is/a/test').and_return(['/','/this/','/this/is/','/this/is/a/','/this/is/a/test'])
+        end
+      end
+
+      describe 'when called with a string and a separator' do
+        it do
+          should run.with_params('!this!is!a!test','!').and_return(['!','!this!','!this!is!','!this!is!a!','!this!is!a!test'])
+        end
+      end
+
+      describe 'when called with a string, separator and a prefix' do
+        it do
+          should run.with_params('!this!is!a!test','!','!tmp').and_return(['!tmp!','!tmp!this!','!tmp!this!is!','!tmp!this!is!a!','!tmp!this!is!a!test'])
+        end
+      end
+    end
+
+Even tests for simple things can get complex really fast as you can see on this
+example. And this spec test is not even complete (for example I do not test if
+the functions checks if it was called with at least one parameter).
+
+The only thing to note here is the first "describe" statement. It should use
+the exact name of what should be tested (in our case the function
+"sequence_string") as parameter. All later describe statements can use what
+ever string describes the situation best.
+
+Lets have a look at our test file for the testguide class:
+
+    testguide_spec.rb:
+    require 'spec_helper'
+
+    describe 'testguide', :type => :class do
+      let(:params) { { :world => 'kitty' } }
+
+      it do
+        should contain_file('/tmp/some/useless/directory/hello.txt') \
+          .with_content('Hello kitty!')
+      end
+
+      it do
+        should contain_file('/tmp/some/')
+      end
+      it do
+        should contain_file('/tmp/some/useless/')
+      end
+      it do
+        should contain_file('/tmp/some/useless/directory')
+      end
+    end
+
+It does look quite similar to the test file for the sequence_string but instead
+of testing the return value of some function, we test that our class contains
+certain resources. Testing for our hello.txt resource is obvious. But why are
+there tests for three different other file resources representing directories?
+Our testguide class only manages the "/tmp/some/useless/directory" directory.
+Or does it? Well, sequence_string returns an array, in this case
+
+    ['/tmp/some/,'/tmp/some/useless/','/tmp/some/useless/directory']
+
+which we pass to `file { $directory:`. This way we create three different
+file resources, one for each level of directories.
+
+Everything else said about the sequence_string test is also true for this test
+of a puppet class. The parameter to the first describe statement must be the
+exact name of the class to test. In this case it is "testguide" but if you want
+to test "mymodule::myclass" it has to be "mymodule::myclass" (contrary to the
+way the test files are named, where only the last part is necessary).
+
+And thats it. We now have a (somewhat lacking) specification against which we
+can test our Puppet code. You really should read the [RspecPuppetTutorial][]
+where some of the finer details of these spec tests are explained. Push your
+changes to your repository on GitHub and watch Travis CI do its magic.
+
+Your module is now ready to be uploaded to the Puppet Forge to be made
+available to a broad audience (who probably will tear it to pieces the
+first time around but well... thats life).
+
   [PuppetForge]: https://forge.puppetlabs.com/ "Puppet Forge"
   [ModuleLayoutDocumentation]: http://docs.puppetlabs.com/puppet/3.6/reference/modules_fundamentals.html#module-layout "Puppetlabs module-layout documentation"
   [PuppetStyleGuide]: http://docs.puppetlabs.com/guides/style_guide.html "Puppet Style Guide"
@@ -449,3 +640,8 @@ test if our code works as designed. This will be part of the next step.
   [ResourceTypes]: http://docs.puppetlabs.com/references/latest/type.html "Type Reference"
   [Functions]: http://docs.puppetlabs.com/references/latest/function.html "Function Reference"
   [CustomFunctionsGuide]: http://docs.puppetlabs.com/guides/custom_functions.html "Custom Functions"
+  [rspec]: http://rspec.info/ "rspec"
+  [rspec-puppet]: http://rspec-puppet.com/ "rspec-puppet"
+  [puppetlabs-spec-helper]: https://github.com/puppetlabs/puppetlabs_spec_helper "puppetlabs_spec_helper on GitHub"
+  [NextGenerationofPuppetModuleTesting]: http://puppetlabs.com/blog/the-next-generation-of-puppet-module-testing "The Next Generation of Puppet Module Testing"
+  [RspecPuppetTutorial]: http://rspec-puppet.com/tutorial/ "rspec-puppet Tutorial"
