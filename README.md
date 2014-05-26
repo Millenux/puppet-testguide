@@ -328,6 +328,103 @@ test setup. The only file we have to modify is the Rakefile where we extend the
 
     task :default => [:lint, :validate]
 
+Thats it, we added templates to our module and included them in our test setup.
+
+Next up are plugins. Plugins can be used to extend Puppet functionality beyond
+the capabilities of the Puppet language used in manifests. They normally are
+used to implement new [ResourceTypes][] or [Functions][]. We will add a simple
+function to our module. Lets start by extending the directory structure
+
+    /testguide/
+      manifests/
+        init.pp
+      templates/
+        hello.erb
+      lib/
+        puppet/
+          parser/
+            functions/
+              sequence_string.rb
+
+Pretty complex structure just for one file. Anyway, the contents of our
+`sequence_string.rb` file is as follows:
+
+    module Puppet::Parser::Functions
+      newfunction(:sequence_string, :type => :rvalue, :doc => <<-EOS
+    Takes a string and returns the sequence substr1,substr1substr2,substr1substr2substr3,...
+
+    *Example*
+
+        sequence_string("/this/is/a/test","/")
+
+    Would result in:
+
+        ["/","/this/","/this/is/","/this/is/a/","/this/is/a/test"]
+        EOS
+      ) do |arguments|
+        str = arguments[0]
+        separator = arguments[1]
+        sequence = [arguments[2]]
+        str.each_line(separator) do |part|
+          sequence << "#{sequence[-1]}#{part}"
+        end
+        if arguments[2]
+          sequence.shift
+        end
+        return sequence.compact
+      end
+    end
+
+If you want to know what all this code means, have a look at the
+[CustomFunctionsGuide][] at Puppetlabs.
+
+To see this function in action we integrate it in our testguide class:
+
+    class testguide ( $world ) {
+
+      $path = "some/useless/directory"
+      $directories = sequence_string($path,"/","/tmp/")
+      file { $directories:
+        ensure => directory,
+      }
+
+      file { "/tmp/${path}/hello.txt":
+        ensure  => file,
+        content => template('testguide/hello.erb')
+      }
+    }
+
+Our plugin is now ready. Before uploading our new code we should add a way to
+test it. As it was the case with templates we only have to extend the
+":validate" task of our Rakefile:
+
+    require 'rubygems'
+    require 'puppet-lint/tasks/puppet-lint'
+    PuppetLint.configuration.send('disable_80chars')
+    PuppetLint.configuration.send('disable_class_inherits_from_params_class')
+    PuppetLint.configuration.ignore_paths = ["spec/**/*.pp", "pkg/**/*.pp","examples/**/*.pp"]
+
+    desc "Validate manifests, templates, and ruby files in lib."
+    task :validate do
+      Dir['manifests/**/*.pp'].each do |manifest|
+        sh "puppet parser validate --noop #{manifest}"
+      end
+      Dir['templates/**/*.erb'].each do |template|
+        sh "erb -P -x -T '-' #{template} | ruby -c"
+      end
+      Dir['lib/**/*.rb'].each do |lib_file|
+        sh "ruby -c #{lib_file}"
+      end
+    end
+
+    task :default => [:lint, :validate]
+
+We now have a Puppet module with common resources, a template and a custom
+function. And everything is automatically tested the moment we push it to our
+repository. Well, sort of. We test for correct syntax and style but we do not
+test if our code works as designed. This will be part of our next and final
+step.
+
   [PuppetForge]: https://forge.puppetlabs.com/ "Puppet Forge"
   [ModuleLayoutDocumentation]: http://docs.puppetlabs.com/puppet/3.6/reference/modules_fundamentals.html#module-layout "Puppetlabs module-layout documentation"
   [PuppetStyleGuide]: http://docs.puppetlabs.com/guides/style_guide.html "Puppet Style Guide"
@@ -350,3 +447,6 @@ test setup. The only file we have to modify is the Rakefile where we extend the
   [rake]: http://rake.rubyforge.org/ "rake"
   [PuppetLintChecks]: http://puppet-lint.com/checks/ "Puppet Lint Check Documentation"
   [templates]: http://docs.puppetlabs.com/guides/templating.html "Using Puppet Templates"
+  [ResourceTypes]: http://docs.puppetlabs.com/references/latest/type.html "Type Reference"
+  [Functions]: http://docs.puppetlabs.com/references/latest/function.html "Function Reference"
+  [CustomFunctionsGuide]: http://docs.puppetlabs.com/guides/custom_functions.html "Custom Functions"
