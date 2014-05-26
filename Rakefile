@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'puppet-lint/tasks/puppet-lint'
+require 'puppetlabs_spec_helper/rake_tasks'
 PuppetLint.configuration.send('disable_80chars')
 PuppetLint.configuration.send('disable_class_inherits_from_params_class')
 PuppetLint.configuration.ignore_paths = ["spec/**/*.pp", "pkg/**/*.pp","examples/**/*.pp"]
@@ -17,4 +18,4 @@ task :validate do
   end
 end
 
-task :default => [:lint, :validate]
+task :default => [:lint, :validate, :spec]

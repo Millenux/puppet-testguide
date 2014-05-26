@@ -9,3 +9,4 @@ end
 gem 'puppet', puppetversion, :require => false
 gem 'puppet-lint'
 gem 'rake'
+gem 'puppetlabs_spec_helper', '>= 0.1.0'
