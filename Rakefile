@@ -12,6 +12,9 @@ task :validate do
   Dir['templates/**/*.erb'].each do |template|
     sh "erb -P -x -T '-' #{template} | ruby -c"
   end
+  Dir['lib/**/*.rb'].each do |lib_file|
+    sh "ruby -c #{lib_file}"
+  end
 end
 
 task :default => [:lint, :validate]
