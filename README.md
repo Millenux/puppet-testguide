@@ -1,8 +1,6 @@
 Automating Puppet Testing - A Step-by-Step Guide
 ================================================
 
-[![Build Status](https://travis-ci.org/Millenux/puppet-testguide.png?branch=master)](https://travis-ci.org/Millenux/puppet-testguide)
-
 So you want to develop a puppet module and want to use all these nice tools
 like GitHub (version control / collaboration), Travis CI (continuous
 integration) and puppet-rspec (unit testing for puppet code).
@@ -19,9 +17,11 @@ The starting point for this guide is a simple module, lets call it
 "testguide". The layout of this module on the filesystem is
 as follows:
 
-    /testguide/
-      manifests/
-        init.pp
+~~~
+testguide/
+└──manifests/
+   │  init.pp
+~~~
 
 A _really_ simple module. For details on how to structure module have a look
 at the official [ModuleLayoutDocumentation][] on this topic.
@@ -30,12 +30,14 @@ And while you are there read the [PuppetStyleGuide][] also.
 To have something to test later on, init.pp contains a clase containing one
 file resource:
 
-    class testguide ( $world ) {
-      file { '/tmp/hello.txt':
-        ensure  => file,
-        content => "Hello ${world}!\\n"
-      }
-    }
+~~~puppet
+class testguide ( $world ) {
+  file { '/tmp/hello.txt':
+    ensure  => file,
+    content => "Hello ${world}!\\n"
+  }
+}
+~~~
 
 This small class (with the mandatory parameter $world) will create a fille
 `/tmp/hello.txt` containing the text "Hello ..." with whatever you passed
@@ -59,24 +61,26 @@ repository as this is also common practice.
 
 Lets add our small module to the puppet-testguide repository:
 
-    [mgruener@devel testguide]$ git init
-    Initialized empty Git repository in /home/mgruener/git/testguide/.git/
-    [mgruener@devel testguide]$ git add .
-    [mgruener@devel testguide]$ git commit -m 'Initial commit'
-    [master (root-commit) dbb6293] Initial commit
-     1 file changed, 6 insertions(+)
-     create mode 100644 manifests/init.pp
-    [mgruener@devel testguide]$ git remote add origin https://github.com/Millenux/puppet-testguide.git
-    [mgruener@devel testguide]$ git push origin master
-    Username for 'https://github.com': mgruener
-    Password for 'https://mgruener@github.com':
-    Counting objects: 4, done.
-    Compressing objects: 100% (2/2), done.
-    Writing objects: 100% (4/4), 364 bytes | 0 bytes/s, done.
-    Total 4 (delta 0), reused 0 (delta 0)
-    To https://github.com/Millenux/puppet-testguide.git
-     * [new branch]      master -> master
-    [mgruener@devel testguide]$
+~~~shell-session
+[mgruener@devel testguide]$ git init
+Initialized empty Git repository in /home/mgruener/git/testguide/.git/
+[mgruener@devel testguide]$ git add .
+[mgruener@devel testguide]$ git commit -m 'Initial commit'
+[master (root-commit) dbb6293] Initial commit
+1 file changed, 6 insertions(+)
+create mode 100644 manifests/init.pp
+[mgruener@devel testguide]$ git remote add origin https://github.com/Millenux/puppet-testguide.git
+[mgruener@devel testguide]$ git push origin master
+Username for 'https://github.com': mgruener
+Password for 'https://mgruener@github.com':
+Counting objects: 4, done.
+Compressing objects: 100% (2/2), done.
+Writing objects: 100% (4/4), 364 bytes | 0 bytes/s, done.
+Total 4 (delta 0), reused 0 (delta 0)
+To https://github.com/Millenux/puppet-testguide.git
+* [new branch]      master -> master
+[mgruener@devel testguide]$
+~~~
 
 Our code is now available online. To allow others to contribute we should add
 a readme explaining what our puppet module does and we should add a license
@@ -97,13 +101,15 @@ it anyway you want but calling it `LICENSE` is common practice and will also
 be recogniced by GitHub when determining under which license your repository
 operates.
 
-    [mgruener@devel testguide]$ touch README.md
-    # describe your puppet module in your README.md
-    [mgruener@devel testguide]$ touch LICENSE
-    # add whatever license you desire
-    [mgruener@devel testguide]$ git add README.md LICENSE
-    [mgruener@devel testguide]$ git commit -m 'Add readme and license'
-    [mgruener@devel testguide]$ git push origin master
+~~~shell-session
+[mgruener@devel testguide]$ touch README.md
+# describe your puppet module in your README.md
+[mgruener@devel testguide]$ touch LICENSE
+# add whatever license you desire
+[mgruener@devel testguide]$ git add README.md LICENSE
+[mgruener@devel testguide]$ git commit -m 'Add readme and license'
+[mgruener@devel testguide]$ git push origin master
+~~~
 
 We now have a module that is version controlled and available to whoever wants
 to contribute. The module has a readme explaining what it does and a license
@@ -121,11 +127,13 @@ nice Puppetlabs blog post regarding [AutomatedTestingForPuppet][].
 
 __If__ you have, the following steps should seem familiar to you:
 
-    [mgruener@devel testguide]$ puppet parser validate manifests/init.pp
-    [mgruener@devel testguide]$ puppet-lint manifests/init.pp
-    WARNING: parameterised class parameter without a default value on line 1
-    WARNING: class not documented on line 1
-    [mgruener@devel testguide]$
+~~~shell-session
+[mgruener@devel testguide]$ puppet parser validate manifests/init.pp
+[mgruener@devel testguide]$ puppet-lint manifests/init.pp
+WARNING: parameterised class parameter without a default value on line 1
+WARNING: class not documented on line 1
+[mgruener@devel testguide]$
+~~~
 
 The first command performs a syntax check on your puppet code, the second one
 performs a style check. If you see these commands for the first time, remember
@@ -177,25 +185,30 @@ project we will need 3 files:
 We need these files because in the basic configuration, Travis CI performs
 the following actions when it detects a new push to the repository:
 
-    $ git clone --depth=50 --branch=master <repo>
-    $ git checkout -qf <commitid>
-    $ ... <setup ruby version> ...
-    $ bundle install
-    $ bundle exec rake
+~~~shell-session
+[user@host ~]$ git clone --depth=50 --branch=master <repo>
+[user@host ~]$ git checkout -qf <commitid>
+[user@host ~]$ ... <setup ruby version> ...
+[user@host ~]$ bundle install
+[user@host ~]$ bundle exec rake
+~~~
 
 Nothing spectacular and really nothing that defines _how_ our code is tested.
 We are free to define this however we want, using the files mentioned above.
 Lets start with defining the environment in which we want to test, meaning the
 Ruby and Puppet versions we want to use while testing:
 
-    .travis.yml:
-    ---
-    rvm:
-      - 1.8.7
-      - 1.9.3
-    env:
-      - PUPPET_VERSION=">= 3.0.0"
-      - PUPPET_VERSION="~> 2.7"
+.travis.yml:
+
+~~~yaml
+---
+rvm:
+- 1.8.7
+- 1.9.3
+env:
+- PUPPET_VERSION=">= 3.0.0"
+- PUPPET_VERSION="~> 2.7"
+~~~
 
 This is all there is Travis CI itself needs to now about our code. The rvm
 part is interpreted by Travis CI and the "PUPPET_VERSION" is an environment
@@ -210,18 +223,21 @@ will test our code in four environments:
 Now that we have defined our build environments, we have to tell bundler what
 to install in each environment. For this we have the Gemfile:
 
-    Gemfile:
-    source 'https://rubygems.org'
+Gemfile:
 
-    if ENV.key?('PUPPET_VERSION')
-      puppetversion = "#{ENV['PUPPET_VERSION']}"
-    else
-      puppetversion = ['~> 2.7']
-    end
+~~~ruby
+source 'https://rubygems.org'
 
-    gem 'puppet', puppetversion, :require => false
-    gem 'puppet-lint'
-    gem 'rake'
+if ENV.key?('PUPPET_VERSION')
+  puppetversion = "#{ENV['PUPPET_VERSION']}"
+else
+  puppetversion = ['~> 2.7']
+end
+
+gem 'puppet', puppetversion, :require => false
+gem 'puppet-lint'
+gem 'rake'
+~~~
 
 Here you can see how the PUPPET_VERSION environment variable from the
 `.travis.yml` file is used. The if/else construct is just a safety net in case
@@ -236,21 +252,24 @@ way, and in the case of puppet, also with a specific version.
 The real "magic" happens in the Rakefile. Here the actual tasks that should be
 performed in our build environment are defined.
 
-    Rakefile:
-    require 'rubygems'
-    require 'puppet-lint/tasks/puppet-lint'
-    PuppetLint.configuration.send('disable_80chars')
-    PuppetLint.configuration.send('disable_class_inherits_from_params_class')
-    PuppetLint.configuration.ignore_paths = ["spec/**/*.pp", "pkg/**/*.pp","examples/**/*.pp"]
+Rakefile:
 
-    desc "Validate manifests, templates, and ruby files in lib."
-    task :validate do
-      Dir['manifests/**/*.pp'].each do |manifest|
-        sh "puppet parser validate --noop #{manifest}"
-      end
-    end
+~~~ruby
+require 'rubygems'
+require 'puppet-lint/tasks/puppet-lint'
+PuppetLint.configuration.send('disable_80chars')
+PuppetLint.configuration.send('disable_class_inherits_from_params_class')
+PuppetLint.configuration.ignore_paths = ["spec/**/*.pp", "pkg/**/*.pp","examples/**/*.pp"]
 
-    task :default => [:lint, :validate]
+desc "Validate manifests, templates, and ruby files in lib."
+task :validate do
+  Dir['manifests/**/*.pp'].each do |manifest|
+    sh "puppet parser validate --noop #{manifest}"
+  end
+end
+
+task :default => [:lint, :validate]
+~~~
 
 In this file we tell Ruby we want to use code from the rubygems and puppet-lint
 Gems. We also set some basic options for puppet-lint (the lines with
@@ -278,55 +297,66 @@ Before we can test anything we have to extend our module so lets do that first.
 And because they are pretty common we will start with adding a template. The
 directory structure of the module has to be extended like this:
 
-    /testguide/
-      manifests/
-        init.pp
-      templates/
-        hello.erb
+~~~
+testguide/
+└──manifests/
+   │  init.pp
+   │
+   └──templates/
+      │  hello.erb
+~~~
 
 And the contents of the template are as follows:
 
-    <% if @world -%>
-    Hello <%= @world %>
-    <% end -%>
+~~~erb
+<% if @world -%>
+Hello <%= @world %>
+<% end -%>
+~~~
 
 Nothing really creative but...well, this is a guide on testing and not on
 creating nice puppet modules. Now we only have to modify our puppet manifest
 `init.pp` to look like this:
 
-    class testguide ( $world ) {
-      file { '/tmp/hello.txt':
-        ensure  => file,
-        content => template('testguide/hello.erb')
-      }
-    }
+~~~puppet
+class testguide ( $world ) {
+  file { '/tmp/hello.txt':
+    ensure  => file,
+    content => template('testguide/hello.erb')
+  }
+}
+~~~
  
 This does exactly the same as before but it uses a template to accomplish that.
 To syntax check our template, we would have to execute the following statement:
 
-    [mgruener@devel testguide]$ erb -P -x -T '-' templates/hello.erb | ruby -c
+~~~shell-session
+[mgruener@devel testguide]$ erb -P -x -T '-' templates/hello.erb | ruby -c
+~~~
 
 The last step, at least in regard to templates, is to integrate this into our
 test setup. The only file we have to modify is the Rakefile where we extend the
 ":validate" task:
 
-    require 'rubygems'
-    require 'puppet-lint/tasks/puppet-lint'
-    PuppetLint.configuration.send('disable_80chars')
-    PuppetLint.configuration.send('disable_class_inherits_from_params_class')
-    PuppetLint.configuration.ignore_paths = ["spec/**/*.pp", "pkg/**/*.pp","examples/**/*.pp"]
+~~~ruby
+require 'rubygems'
+require 'puppet-lint/tasks/puppet-lint'
+PuppetLint.configuration.send('disable_80chars')
+PuppetLint.configuration.send('disable_class_inherits_from_params_class')
+PuppetLint.configuration.ignore_paths = ["spec/**/*.pp", "pkg/**/*.pp","examples/**/*.pp"]
 
-    desc "Validate manifests, templates, and ruby files in lib."
-    task :validate do
-      Dir['manifests/**/*.pp'].each do |manifest|
-        sh "puppet parser validate --noop #{manifest}"
-      end
-      Dir['templates/**/*.erb'].each do |template|
-        sh "erb -P -x -T '-' #{template} | ruby -c"
-      end
-    end
+desc "Validate manifests, templates, and ruby files in lib."
+task :validate do
+  Dir['manifests/**/*.pp'].each do |manifest|
+    sh "puppet parser validate --noop #{manifest}"
+  end
+  Dir['templates/**/*.erb'].each do |template|
+    sh "erb -P -x -T '-' #{template} | ruby -c"
+  end
+end
 
-    task :default => [:lint, :validate]
+task :default => [:lint, :validate]
+~~~
 
 Thats it, we added templates to our module and included them in our test setup.
 
@@ -335,89 +365,99 @@ the capabilities of the Puppet language used in manifests. They normally are
 used to implement new [ResourceTypes][] or [Functions][]. We will add a simple
 function to our module. Lets start by extending the directory structure
 
-    /testguide/
-      manifests/
-        init.pp
-      templates/
-        hello.erb
-      lib/
-        puppet/
-          parser/
-            functions/
-              sequence_string.rb
+~~~
+testguide/
+└──manifests/
+   │  init.pp
+   │
+   ├──templates/
+   │  │  hello.erb
+   │
+   └──lib/
+      └──puppet/
+         └──parser/
+            └──functions/
+               │  sequence_string.rb
+~~~
 
 Pretty complex structure just for one file. Anyway, the contents of our
 `sequence_string.rb` file is as follows:
 
-    module Puppet::Parser::Functions
-      newfunction(:sequence_string, :type => :rvalue, :doc => <<-EOS
-    Takes a string and returns the sequence substr1,substr1substr2,substr1substr2substr3,...
+~~~ruby
+module Puppet::Parser::Functions
+  newfunction(:sequence_string, :type => :rvalue, :doc => <<-EOS
+Takes a string and returns the sequence substr1,substr1substr2,substr1substr2substr3,...
 
-    *Example*
+*Example*
 
-        sequence_string("/this/is/a/test","/")
+    sequence_string("/this/is/a/test","/")
 
-    Would result in:
+Would result in:
 
-        ["/","/this/","/this/is/","/this/is/a/","/this/is/a/test"]
-        EOS
-      ) do |arguments|
-        str = arguments[0]
-        separator = arguments[1] ? arguments[1] : '/'
-        sequence = [arguments[2]]
-        str.each_line(separator) do |part|
-          sequence << "#{sequence[-1]}#{part}"
-        end
-        if arguments[2]
-          sequence.shift
-        end
-        return sequence.compact
-      end
+    ["/","/this/","/this/is/","/this/is/a/","/this/is/a/test"]
+    EOS
+  ) do |arguments|
+    str = arguments[0]
+    separator = arguments[1] ? arguments[1] : '/'
+    sequence = [arguments[2]]
+    str.each_line(separator) do |part|
+      sequence << "#{sequence[-1]}#{part}"
     end
+    if arguments[2]
+      sequence.shift
+    end
+    return sequence.compact
+  end
+end
+~~~
 
 If you want to know what all this code means, have a look at the
 [CustomFunctionsGuide][] at Puppetlabs.
 
 To see this function in action we integrate it in our testguide class:
 
-    class testguide ( $world ) {
+~~~puppet
+class testguide ( $world ) {
 
-      $path = "some/useless/directory"
-      $directories = sequence_string($path,"/","/tmp/")
-      file { $directories:
-        ensure => directory,
-      }
+  $path = "some/useless/directory"
+  $directories = sequence_string($path,"/","/tmp/")
+  file { $directories:
+    ensure => directory,
+  }
 
-      file { "/tmp/${path}/hello.txt":
-        ensure  => file,
-        content => template('testguide/hello.erb')
-      }
-    }
+  file { "/tmp/${path}/hello.txt":
+    ensure  => file,
+    content => template('testguide/hello.erb')
+  }
+}
+~~~
 
 Our plugin is now ready. Before uploading our new code we should add a way to
 test it. As it was the case with templates we only have to extend the
 ":validate" task of our Rakefile:
 
-    require 'rubygems'
-    require 'puppet-lint/tasks/puppet-lint'
-    PuppetLint.configuration.send('disable_80chars')
-    PuppetLint.configuration.send('disable_class_inherits_from_params_class')
-    PuppetLint.configuration.ignore_paths = ["spec/**/*.pp", "pkg/**/*.pp","examples/**/*.pp"]
+~~~ruby
+require 'rubygems'
+require 'puppet-lint/tasks/puppet-lint'
+PuppetLint.configuration.send('disable_80chars')
+PuppetLint.configuration.send('disable_class_inherits_from_params_class')
+PuppetLint.configuration.ignore_paths = ["spec/**/*.pp", "pkg/**/*.pp","examples/**/*.pp"]
 
-    desc "Validate manifests, templates, and ruby files in lib."
-    task :validate do
-      Dir['manifests/**/*.pp'].each do |manifest|
-        sh "puppet parser validate --noop #{manifest}"
-      end
-      Dir['templates/**/*.erb'].each do |template|
-        sh "erb -P -x -T '-' #{template} | ruby -c"
-      end
-      Dir['lib/**/*.rb'].each do |lib_file|
-        sh "ruby -c #{lib_file}"
-      end
-    end
+desc "Validate manifests, templates, and ruby files in lib."
+task :validate do
+  Dir['manifests/**/*.pp'].each do |manifest|
+    sh "puppet parser validate --noop #{manifest}"
+  end
+  Dir['templates/**/*.erb'].each do |template|
+    sh "erb -P -x -T '-' #{template} | ruby -c"
+  end
+  Dir['lib/**/*.rb'].each do |lib_file|
+    sh "ruby -c #{lib_file}"
+  end
+end
 
-    task :default => [:lint, :validate]
+task :default => [:lint, :validate]
+~~~
 
 We now have a Puppet module with common resources, a template and a custom
 function. And everything is automatically tested the moment we push it to our
@@ -449,43 +489,47 @@ For some more details on this spec-helper have a look at the
 
 First we have to add the puppetlabs_spec_helper Gem to our `Gemfile`:
 
-    source 'https://rubygems.org'
+~~~ruby
+source 'https://rubygems.org'
 
-    if ENV.key?('PUPPET_VERSION')
-      puppetversion = "#{ENV['PUPPET_VERSION']}"
-    else
-      puppetversion = ['~> 2.7']
-    end
+if ENV.key?('PUPPET_VERSION')
+  puppetversion = "#{ENV['PUPPET_VERSION']}"
+else
+  puppetversion = ['~> 2.7']
+end
 
-    gem 'puppet', puppetversion, :require => false
-    gem 'puppet-lint'
-    gem 'rake'
-    gem 'puppetlabs_spec_helper', '>= 0.1.0'
+gem 'puppet', puppetversion, :require => false
+gem 'puppet-lint'
+gem 'rake'
+gem 'puppetlabs_spec_helper', '>= 0.1.0'
+~~~
 
 Then we have to add the Rake tasks provided by the spec-helper to our
 `Rakefile` and tell it to execute them as part of the ":default" task:
 
-    require 'rubygems'
-    require 'puppet-lint/tasks/puppet-lint'
-    require 'puppetlabs_spec_helper/rake_tasks'
-    PuppetLint.configuration.send('disable_80chars')
-    PuppetLint.configuration.send('disable_class_inherits_from_params_class')
-    PuppetLint.configuration.ignore_paths = ["spec/**/*.pp", "pkg/**/*.pp","examples/**/*.pp"]
+~~~ruby
+require 'rubygems'
+require 'puppet-lint/tasks/puppet-lint'
+require 'puppetlabs_spec_helper/rake_tasks'
+PuppetLint.configuration.send('disable_80chars')
+PuppetLint.configuration.send('disable_class_inherits_from_params_class')
+PuppetLint.configuration.ignore_paths = ["spec/**/*.pp", "pkg/**/*.pp","examples/**/*.pp"]
 
-    desc "Validate manifests, templates, and ruby files in lib."
-    task :validate do
-      Dir['manifests/**/*.pp'].each do |manifest|
-        sh "puppet parser validate --noop #{manifest}"
-      end
-      Dir['templates/**/*.erb'].each do |template|
-        sh "erb -P -x -T '-' #{template} | ruby -c"
-      end
-      Dir['lib/**/*.rb'].each do |lib_file|
-        sh "ruby -c #{lib_file}"
-      end
-    end
+desc "Validate manifests, templates, and ruby files in lib."
+task :validate do
+  Dir['manifests/**/*.pp'].each do |manifest|
+    sh "puppet parser validate --noop #{manifest}"
+  end
+  Dir['templates/**/*.erb'].each do |template|
+    sh "erb -P -x -T '-' #{template} | ruby -c"
+  end
+  Dir['lib/**/*.rb'].each do |lib_file|
+    sh "ruby -c #{lib_file}"
+  end
+end
 
-    task :default => [:lint, :validate, :spec]
+task :default => [:lint, :validate, :spec]
+~~~
 
 The ":spec" task provided by the puppetlabs_spec_helper/rake_tasks will create
 the so called "fixtures", run the spec tests and clean up afterwards.
@@ -498,34 +542,43 @@ should be present in our test environment.
 
 In our case this is simple, we only need the module we like to test:
 
-    fixtures:
-      symlinks:
-        testguide: "#{source_dir}"
+~~~yaml
+fixtures:
+  symlinks:
+    testguide: "#{source_dir}"
+~~~
 
 Next we will prepare the directory structure for our spec-tests and add a
 `spec_helper.rb`. This file includes things common to all our spec-tests and we
 will require it in each one.
 
-    /testguide/
-      manifests/
-        init.pp
-      templates/
-        hello.erb
-      lib/
-        puppet/
-          parser/
-            functions/
-              sequence_string.rb
-      .fixtures.yml
-      spec/
-        classes/
-        functions/
-        spec_helper.rb
+~~~
+testguide/
+│  .fixtures.yml
+│
+└──manifests/
+   │  init.pp
+   │
+   ├──templates/
+   │  │  hello.erb
+   │
+   ├──lib/
+   │  └──puppet/
+   │     └──parser/
+   │        └──functions/
+   │           │  sequence_string.rb
+   └──spec/
+      └──classes/
+         └──functions/
+            │  spec_helper.rb
+~~~
 
 In our case the `spec_helper.rb` is really simple:
 
-    require 'rubygems'
-    require 'puppetlabs_spec_helper/module_spec_helper'
+~~~ruby
+require 'rubygems'
+require 'puppetlabs_spec_helper/module_spec_helper'
+~~~
 
 All the actual work is done by the puppetlabs_spec_helper. With all the
 preparations finished we can start to create the actual spec-tests.
@@ -545,28 +598,31 @@ like "mymodule::myclass" you would call your test file `myclass_spec.rb`.
 
 Lets start with the specification for our sequence_string function:
 
-    sequence_string_spec.rb:
-    require 'spec_helper'
+sequence_string_spec.rb:
 
-    describe 'sequence_string' do
-      describe 'when called only with a single string parameter' do
-        it do
-          should run.with_params('/this/is/a/test').and_return(['/','/this/','/this/is/','/this/is/a/','/this/is/a/test'])
-        end
-      end
+~~~ruby
+require 'spec_helper'
 
-      describe 'when called with a string and a separator' do
-        it do
-          should run.with_params('!this!is!a!test','!').and_return(['!','!this!','!this!is!','!this!is!a!','!this!is!a!test'])
-        end
-      end
-
-      describe 'when called with a string, separator and a prefix' do
-        it do
-          should run.with_params('!this!is!a!test','!','!tmp').and_return(['!tmp!','!tmp!this!','!tmp!this!is!','!tmp!this!is!a!','!tmp!this!is!a!test'])
-        end
-      end
+describe 'sequence_string' do
+  describe 'when called only with a single string parameter' do
+    it do
+      should run.with_params('/this/is/a/test').and_return(['/','/this/','/this/is/','/this/is/a/','/this/is/a/test'])
     end
+  end
+
+  describe 'when called with a string and a separator' do
+    it do
+      should run.with_params('!this!is!a!test','!').and_return(['!','!this!','!this!is!','!this!is!a!','!this!is!a!test'])
+    end
+  end
+
+  describe 'when called with a string, separator and a prefix' do
+    it do
+      should run.with_params('!this!is!a!test','!','!tmp').and_return(['!tmp!','!tmp!this!','!tmp!this!is!','!tmp!this!is!a!','!tmp!this!is!a!test'])
+    end
+  end
+end
+~~~
 
 Even tests for simple things can get complex really fast as you can see on this
 example. And this spec test is not even complete (for example I do not test if
@@ -579,27 +635,30 @@ ever string describes the situation best.
 
 Lets have a look at our test file for the testguide class:
 
-    testguide_spec.rb:
-    require 'spec_helper'
+testguide_spec.rb:
 
-    describe 'testguide', :type => :class do
-      let(:params) { { :world => 'Kitty!' } }
+~~~ruby
+require 'spec_helper'
 
-      it do
-        should contain_file('/tmp/some/useless/directory/hello.txt') \
-          .with_content("Hello Kitty!\n")
-      end
+describe 'testguide', :type => :class do
+  let(:params) { { :world => 'Kitty!' } }
 
-      it do
-        should contain_file('/tmp/some/')
-      end
-      it do
-        should contain_file('/tmp/some/useless/')
-      end
-      it do
-        should contain_file('/tmp/some/useless/directory')
-      end
-    end
+  it do
+    should contain_file('/tmp/some/useless/directory/hello.txt') \
+      .with_content("Hello Kitty!\n")
+  end
+
+  it do
+    should contain_file('/tmp/some/')
+  end
+  it do
+    should contain_file('/tmp/some/useless/')
+  end
+  it do
+    should contain_file('/tmp/some/useless/directory')
+  end
+end
+~~~
 
 It does look quite similar to the test file for the sequence_string but instead
 of testing the return value of some function, we test that our class contains
@@ -608,7 +667,9 @@ there tests for three different other file resources representing directories?
 Our testguide class only manages the "/tmp/some/useless/directory" directory.
 Or does it? Well, sequence_string returns an array, in this case
 
-    $directories = ['/tmp/some/,'/tmp/some/useless/','/tmp/some/useless/directory']
+~~~puppet
+$directories = ['/tmp/some/,'/tmp/some/useless/','/tmp/some/useless/directory']
+~~~
 
 which we pass to `file { $directories:`. This way we create three different
 file resources, one for each level of directories.
