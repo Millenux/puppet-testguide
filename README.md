@@ -751,8 +751,8 @@ Without much further ado, the metadata.json file for our module:
 }
 ~~~
 
-The name __has__ to be "<username>-<modulename>", where "<username>" is the
-username you intend to use for the Puppet Forge account.. With this file
+The name __has__ to be "username-modulename", where "username" is the
+username you intend to use for the Puppet Forge account. With this file
 present, we can build a module file.
 
 ~~~shell-session
