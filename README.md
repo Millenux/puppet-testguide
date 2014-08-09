@@ -1,6 +1,8 @@
 Automating Puppet Testing - A Step-by-Step Guide
 ================================================
 
+[![Build Status](https://travis-ci.org/Millenux/puppet-testguide.png?branch=master)](https://travis-ci.org/Millenux/puppet-testguide)
+
 So you want to develop a puppet module and want to use all these nice tools
 like GitHub (version control / collaboration), Travis CI (continuous
 integration) and puppet-rspec (unit testing for puppet code).
@@ -689,6 +691,99 @@ Your module is now ready to be uploaded to the Puppet Forge to be made
 available to a broad audience (who probably will tear it to pieces the
 first time around but well... thats life).
 
+5. The big big world - publishing the module on the Puppet Forge
+----------------------------------------------------------------
+
+After writing, extending and testing our module, it is now ready to be
+published. For this purpose PuppetLabs provides the Puppet Forge. But
+before we can do this we need to add some information to our module.
+This includes a proper name, a version, dependencies and some other
+metadata.
+
+For details on publishing modules I recommend you read
+[PublishingModulesonthePuppetForge][]. For the sake of this guide I will
+give a short explanation on what has to be done.
+
+We start by creating a metadata.json file in our module directory. As the
+name suggests, this file conains all the relevant metadata about the module.
+The mandatory fields are:
+
+  * name
+  * version
+  * author
+  * license
+  * summary
+  * source
+  * dependencies
+  
+Optional fields:
+
+  * project_page
+  * issues_url
+  * operatingsystem_support
+  * tags
+
+Nothing fancy here, really. Well maybe the operatingsystem_support and
+dependencies fields (which we incidentally do not cover here) but just have a
+close look at the example provided at the document mentioned above and you will
+see how the work.
+
+Without much further ado, the metadata.json file for our module:
+
+~~~json
+{
+  "name": "millenux-testguide",
+  "version": "1.0.0",
+  "author": "millenux",
+  "summary": "A guide on the creation and test of puppet modules in the form of a puppet module.",
+  "license": "GPL",
+  "source": "git://github.com/Millenux/puppet-testguide.git",
+  "project_page": "https://github.com/Millenux/puppet-testguide",
+  "issues_url": "https://github.com/Millenux/puppet-testguide/issues",
+  "tags": [
+    "guide",
+    "modules",
+    "puppet"
+  ],
+  "dependencies": [
+  
+  ]
+}
+~~~
+
+The name __has__ to be "<username>-<modulename>", where "<username>" is the
+username you intend to use for the Puppet Forge account.. With this file
+present, we can build a module file.
+
+~~~shell-session
+[mgruener@devel ~]$ cd git/puppet-testguide
+[mgruener@devel puppet-testguide]$ puppet module build .
+[mgruener@devel puppet-testguide]$ puppet module build .
+Notice: Building /home/mgruener/git/puppet-testguide for release
+Module built: /home/mgruener/git/puppet-testguide/pkg/millenux-testguide-1.0.0.tar.gz
+[mgruener@devel puppet-testguide]$ puppet module changes pkg/millenux-testguide-1.0.0
+Notice: No modified files
+
+[mgruener@devel puppet-testguide]$ 
+~~~
+
+We now have a module file that can be used by others to install our module. To
+prevent git from versioning the directory containing the released files, we add
+a small .gitignore file:
+
+~~~shell-session
+[mgruener@devel puppet-testguide]$ echo "pkg/" > .gitignore
+~~~
+
+What is left to be done is the actual publishing of the module. Head to
+[PuppetForgeSignup][], create an account, login and hit the big green
+"Publish a Module" button. Follow the instructions (you do not need me
+to explain to you how to do that, do you?) and upload the
+previously created module file (millenux-testguide-1.0.0.tar.gz).
+
+Congratulations, you just have created your first puppet module, added
+automated testing and published it for others to find, use and criticize.
+
   [PuppetForge]: https://forge.puppetlabs.com/ "Puppet Forge"
   [ModuleLayoutDocumentation]: http://docs.puppetlabs.com/puppet/3.6/reference/modules_fundamentals.html#module-layout "Puppetlabs module-layout documentation"
   [PuppetStyleGuide]: http://docs.puppetlabs.com/guides/style_guide.html "Puppet Style Guide"
@@ -719,3 +814,5 @@ first time around but well... thats life).
   [puppetlabs-spec-helper]: https://github.com/puppetlabs/puppetlabs_spec_helper "puppetlabs_spec_helper on GitHub"
   [NextGenerationofPuppetModuleTesting]: http://puppetlabs.com/blog/the-next-generation-of-puppet-module-testing "The Next Generation of Puppet Module Testing"
   [RspecPuppetTutorial]: http://rspec-puppet.com/tutorial/ "rspec-puppet Tutorial"
+  [PublishingModulesonthePuppetForge]: https://docs.puppetlabs.com/puppet/latest/reference/modules_publishing.html
+  [PuppetForgeSignup]: https://forge.puppetlabs.com/signup
