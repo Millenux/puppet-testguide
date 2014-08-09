@@ -1,0 +1,18 @@
+{
+  "name": "millenux-testguide",
+  "version": "1.0.0",
+  "author": "millenux",
+  "summary": "A guide on the creation and test of puppet modules in the form of a puppet module.",
+  "license": "GPL",
+  "source": "git://github.com/Millenux/puppet-testguide.git",
+  "project_page": "https://github.com/Millenux/puppet-testguide",
+  "issues_url": "https://github.com/Millenux/puppet-testguide/issues",
+  "tags": [
+    "guide",
+    "modules",
+    "puppet"
+  ],
+  "dependencies": [
+  
+  ]
+}
