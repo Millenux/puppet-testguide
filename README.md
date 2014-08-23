@@ -301,11 +301,11 @@ directory structure of the module has to be extended like this:
 
 ~~~
 testguide/
-└──manifests/
-   │  init.pp
-   │
-   └──templates/
-      │  hello.erb
+├──manifests/
+│     init.pp
+│
+└──templates/
+   │  hello.erb
 ~~~
 
 And the contents of the template are as follows:
@@ -369,17 +369,17 @@ function to our module. Lets start by extending the directory structure
 
 ~~~
 testguide/
-└──manifests/
-   │  init.pp
-   │
-   ├──templates/
-   │  │  hello.erb
-   │
-   └──lib/
-      └──puppet/
-         └──parser/
-            └──functions/
-               │  sequence_string.rb
+├───manifests/
+│     init.pp
+│
+├──templates/
+│  │  hello.erb
+│
+└──lib/
+   └──puppet/
+      └──parser/
+         └──functions/
+            │  sequence_string.rb
 ~~~
 
 Pretty complex structure just for one file. Anyway, the contents of our
@@ -558,21 +558,21 @@ will require it in each one.
 testguide/
 │  .fixtures.yml
 │
-└──manifests/
-   │  init.pp
-   │
-   ├──templates/
-   │  │  hello.erb
-   │
-   ├──lib/
-   │  └──puppet/
-   │     └──parser/
-   │        └──functions/
-   │           │  sequence_string.rb
-   └──spec/
-      └──classes/
-         └──functions/
-            │  spec_helper.rb
+├───manifests/
+│     init.pp
+│
+├──templates/
+│  │  hello.erb
+│
+├──lib/
+│  └──puppet/
+│     └──parser/
+│        └──functions/
+│           │  sequence_string.rb
+└──spec/
+   └──classes/
+      └──functions/
+         │  spec_helper.rb
 ~~~
 
 In our case the `spec_helper.rb` is really simple:
