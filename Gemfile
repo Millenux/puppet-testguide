@@ -7,6 +7,6 @@ else
 end
 
 gem 'puppet', puppetversion, :require => false
-gem 'puppet-lint'
+gem 'puppet-lint', '< 1.0.0'
 gem 'rake'
 gem 'puppetlabs_spec_helper', '>= 0.1.0'
